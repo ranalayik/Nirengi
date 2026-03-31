@@ -10,8 +10,8 @@ AIBulucu, kullanıcının yapmak istediği işi kendi cümleleriyle anlatmasına
 **AI'ın Rolü:** Kullanıcının serbest metin girdisi analiz ediliyor. Teknik skor (%40) + kullanıcı memnuniyeti (%35) + kişiselleştirme bonusu (%25) formülüyle sıralama üretiliyor.
 
 ## Canlı Demo
-🌐 **Yayın Linki:** `https://aibulucu.netlify.app` *(deploy sonrası güncellenecek)*
-🎬 **Demo Video:** `https://loom.com/share/...` *(çekim sonrası güncellenecek)*
+🌐 **Yayın Linki:** `https://www.loom.com/share/7fa453a9d5374562ac37bce243e29ec4` 
+🎬 **Demo Video:** `https://www.loom.com/share/7fa453a9d5374562ac37bce243e29ec4`
 
 ---
 
