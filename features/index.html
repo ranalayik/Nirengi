@@ -164,6 +164,16 @@
     .rc-text{font-size:.81rem;color:var(--muted2);line-height:1.58;}
     .rc-date{font-size:.66rem;color:var(--muted);margin-top:.45rem;}
 
+    /* ── REVIEW STAR FILTER ── */
+    .rev-star-filter{display:flex;gap:.4rem;padding:.7rem 1.25rem;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;}
+    .rsf-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);padding:.3rem .65rem;border-radius:20px;font-size:.72rem;cursor:pointer;transition:all .2s;font-family:'Instrument Sans',sans-serif;}
+    .rsf-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .rsf-btn.active{background:rgba(245,200,66,.12);border-color:var(--gold);color:var(--gold);font-weight:600;}
+    .rev-no-result{text-align:center;padding:2rem;color:var(--muted);font-size:.85rem;}
+
+    /* ── BUDGET NOTICE ── */
+    .budget-notice{background:rgba(253,123,77,.07);border:1px solid rgba(253,123,77,.2);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.8rem;color:var(--accent3);line-height:1.5;}
+
     /* ── FAVORITES PANEL SPECIFIC ── */
     .fav-panel-empty{text-align:center;padding:3rem 1.5rem;color:var(--muted);}
     .fav-panel-empty .fav-big-star{font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.3;}
@@ -204,6 +214,14 @@
   <div class="panel-avg">
     <div class="avg-num" id="revAvgNum">—</div>
     <div><div class="avg-stars-row" id="revAvgStars"></div><div class="avg-count" id="revAvgCount"></div></div>
+  </div>
+  <div class="rev-star-filter" id="revStarFilter">
+    <button class="rsf-btn active" data-star="0" onclick="filterRevStars(0)">Tümü</button>
+    <button class="rsf-btn" data-star="5" onclick="filterRevStars(5)">★★★★★</button>
+    <button class="rsf-btn" data-star="4" onclick="filterRevStars(4)">★★★★</button>
+    <button class="rsf-btn" data-star="3" onclick="filterRevStars(3)">★★★</button>
+    <button class="rsf-btn" data-star="2" onclick="filterRevStars(2)">★★</button>
+    <button class="rsf-btn" data-star="1" onclick="filterRevStars(1)">★</button>
   </div>
   <div class="panel-body" id="revPanelBody"></div>
 </div>
@@ -411,60 +429,60 @@ function buildSelects(){
 // ════════════════════════════════════════════════════════════
 const REVIEWS = {
   "ChatGPT (GPT-4o)":{
-    featured:{author:"Mert K.",role:"Content Writer / İçerik Yazarı",stars:5,text:"I produce 20 blog posts a day. Without ChatGPT this pace would be impossible.",color:"#6c5ce7"},
+    featured:{author:"Mert K.",role:"Content Writer / İçerik Yazarı",stars:5,text:{tr:"Günde 20 blog yazısı üretiyorum. ChatGPT olmadan bu tempo imkânsız olurdu.",en:"I produce 20 blog posts a day. Without ChatGPT this pace would be impossible."},color:"#6c5ce7"},
     all:[
-      {author:"Mert K.",role:"Content Writer",stars:5,text:"I produce 20 blog posts a day. Without ChatGPT this pace would be impossible. Turkish language quality improved a lot in recent versions.",color:"#6c5ce7",date:"Mar 2025"},
-      {author:"Selin A.",role:"Marketing Manager",stars:5,text:"Perfect for ad copy. In A/B tests, ChatGPT-written texts outperformed by 34%.",color:"#00b8ff",date:"Feb 2025"},
-      {author:"Yusuf D.",role:"Student",stars:4,text:"Very helpful for assignments. Just be careful — it can sometimes hallucinate sources.",color:"#fd7b4d",date:"Jan 2025"},
-      {author:"Canan T.",role:"Entrepreneur",stars:5,text:"Finished my business plan in 2 hours. I would have paid a consultant a lot for this.",color:"#00e5a0",date:"Dec 2024"},
-      {author:"Ahmet R.",role:"Freelance Writer",stars:4,text:"Great for SEO content. Sometimes uses an overly formal tone though.",color:"#f5c842",date:"Nov 2024"},
-      {author:"Lena M.",role:"UX Researcher",stars:5,text:"Best for synthesizing research notes into user stories. Saves hours every sprint.",color:"#a29bfe",date:"Oct 2024"},
+      {author:"Mert K.",role:"İçerik Yazarı",stars:5,text:{tr:"Günde 20 blog yazısı üretiyorum. ChatGPT olmadan bu tempo imkânsız olurdu. Son sürümlerde Türkçe kalitesi inanılmaz arttı.",en:"I produce 20 blog posts a day. Without ChatGPT this pace would be impossible. Turkish language quality improved a lot in recent versions."},color:"#6c5ce7",date:"Mar 2025"},
+      {author:"Selin A.",role:"Pazarlama Yöneticisi",stars:5,text:{tr:"Reklam metinleri için mükemmel. A/B testlerinde ChatGPT'nin yazdığı metinler %34 daha yüksek performans gösterdi.",en:"Perfect for ad copy. In A/B tests, ChatGPT-written texts outperformed by 34%."},color:"#00b8ff",date:"Feb 2025"},
+      {author:"Yusuf D.",role:"Öğrenci",stars:4,text:{tr:"Ödevlerde çok işe yarıyor. Sadece dikkatli ol — zaman zaman kaynakları uydurabilir.",en:"Very helpful for assignments. Just be careful — it can sometimes hallucinate sources."},color:"#fd7b4d",date:"Jan 2025"},
+      {author:"Canan T.",role:"Girişimci",stars:5,text:{tr:"İş planımı 2 saatte bitirdim. Bunu bir danışmana yaptırsaydım çok para öderdi.",en:"Finished my business plan in 2 hours. I would have paid a consultant a lot for this."},color:"#00e5a0",date:"Dec 2024"},
+      {author:"Ahmet R.",role:"Serbest Yazar",stars:4,text:{tr:"SEO içerikler için harika. Bazen çok resmi bir ton kullanıyor.",en:"Great for SEO content. Sometimes uses an overly formal tone though."},color:"#f5c842",date:"Nov 2024"},
+      {author:"Lena M.",role:"UX Araştırmacısı",stars:5,text:{tr:"Araştırma notlarını kullanıcı hikayelerine dönüştürmek için en iyisi. Her sprint saatler kazandırıyor.",en:"Best for synthesizing research notes into user stories. Saves hours every sprint."},color:"#a29bfe",date:"Oct 2024"},
     ]
   },
   "Claude (Anthropic)":{
-    featured:{author:"Deniz Y.",role:"Researcher / Araştırmacı",stars:5,text:"I uploaded a 200-page report and queried it directly. No other AI could do this.",color:"#00e5a0"},
+    featured:{author:"Deniz Y.",role:"Araştırmacı",stars:5,text:{tr:"200 sayfalık raporu yükleyip direkt sorguladım. Başka hiçbir AI bunu yapamadı.",en:"I uploaded a 200-page report and queried it directly. No other AI could do this."},color:"#00e5a0"},
     all:[
-      {author:"Deniz Y.",role:"Researcher",stars:5,text:"I uploaded a 200-page report and queried it directly. No other AI could do this — the context window is genuinely revolutionary.",color:"#00e5a0",date:"Mar 2025"},
-      {author:"Elif S.",role:"Academic",stars:5,text:"The AI I trust most for academic writing. Most honest about what it doesn't know.",color:"#6c5ce7",date:"Feb 2025"},
-      {author:"Burak M.",role:"Software Engineer",stars:5,text:"Beats GPT for complex algorithm explanations. The nuance in technical answers is noticeably better.",color:"#fd7b4d",date:"Jan 2025"},
-      {author:"Taner B.",role:"Legal Consultant",stars:5,text:"Incredible for contract analysis. Breaks down complex legal language into plain English.",color:"#f5c842",date:"Nov 2024"},
-      {author:"Sara L.",role:"Novelist",stars:4,text:"Long-form fiction help is unmatched — it remembers every character detail across chapters.",color:"#00b8ff",date:"Oct 2024"},
-      {author:"Kemal A.",role:"Data Analyst",stars:4,text:"Handles huge CSV descriptions well. Not quite Code Interpreter level but very close.",color:"#a29bfe",date:"Sep 2024"},
+      {author:"Deniz Y.",role:"Araştırmacı",stars:5,text:{tr:"200 sayfalık raporu yükleyip direkt sorguladım. Başka hiçbir AI bunu yapamadı — bağlam penceresi gerçekten devrim niteliğinde.",en:"I uploaded a 200-page report and queried it directly. No other AI could do this — the context window is genuinely revolutionary."},color:"#00e5a0",date:"Mar 2025"},
+      {author:"Elif S.",role:"Akademisyen",stars:5,text:{tr:"Akademik yazımda en çok güvendiğim AI. Bilmediklerini en dürüst şekilde söyleyen model.",en:"The AI I trust most for academic writing. Most honest about what it doesn't know."},color:"#6c5ce7",date:"Feb 2025"},
+      {author:"Burak M.",role:"Yazılım Mühendisi",stars:5,text:{tr:"Karmaşık algoritma açıklamalarında GPT'yi geçiyor. Teknik cevaplardaki nüans fark edilir derecede daha iyi.",en:"Beats GPT for complex algorithm explanations. The nuance in technical answers is noticeably better."},color:"#fd7b4d",date:"Jan 2025"},
+      {author:"Taner B.",role:"Hukuk Danışmanı",stars:5,text:{tr:"Sözleşme analizi için inanılmaz. Karmaşık hukuki metinleri sade bir dille özetliyor.",en:"Incredible for contract analysis. Breaks down complex legal language into plain English."},color:"#f5c842",date:"Nov 2024"},
+      {author:"Sara L.",role:"Romancı",stars:4,text:{tr:"Uzun form kurgu için rakipsiz — bölümler boyunca tüm karakter detaylarını hatırlıyor.",en:"Long-form fiction help is unmatched — it remembers every character detail across chapters."},color:"#00b8ff",date:"Oct 2024"},
+      {author:"Kemal A.",role:"Veri Analisti",stars:4,text:{tr:"Büyük CSV açıklamalarını iyi hallediyor. Code Interpreter seviyesinde değil ama çok yakın.",en:"Handles huge CSV descriptions well. Not quite Code Interpreter level but very close."},color:"#a29bfe",date:"Sep 2024"},
     ]
   },
   "Gemini (Google)":{
-    featured:{author:"Kerem A.",role:"Product Manager",stars:4,text:"The Google Workspace integration completely changed my daily workflow.",color:"#00b8ff"},
+    featured:{author:"Kerem A.",role:"Ürün Yöneticisi",stars:4,text:{tr:"Google Workspace entegrasyonu günlük iş akışımı tamamen değiştirdi.",en:"The Google Workspace integration completely changed my daily workflow."},color:"#00b8ff"},
     all:[
-      {author:"Kerem A.",role:"Product Manager",stars:4,text:"The Google Workspace integration completely changed my daily workflow. Drafting emails and docs directly in Gmail is a huge time saver.",color:"#00b8ff",date:"Mar 2025"},
-      {author:"Zeynep O.",role:"Teacher",stars:4,text:"I use it to prepare classroom materials. Analyzing YouTube videos is a killer feature.",color:"#00e5a0",date:"Feb 2025"},
-      {author:"Funda L.",role:"Freelance Designer",stars:5,text:"Visual understanding is phenomenal. Upload a design file and get detailed feedback instantly.",color:"#fd7b4d",date:"Dec 2024"},
-      {author:"Ozan K.",role:"Data Analyst",stars:3,text:"Strong but sometimes inconsistent. Outside of Google integrations it can lag behind rivals.",color:"#6c5ce7",date:"Jan 2025"},
-      {author:"Iris W.",role:"Journalist",stars:4,text:"Real-time search results integrated into answers is genuinely useful for breaking news.",color:"#f5c842",date:"Nov 2024"},
+      {author:"Kerem A.",role:"Ürün Yöneticisi",stars:4,text:{tr:"Google Workspace entegrasyonu günlük iş akışımı tamamen değiştirdi. Gmail üzerinden doğrudan e-posta ve doküman hazırlamak büyük zaman tasarrufu sağlıyor.",en:"The Google Workspace integration completely changed my daily workflow. Drafting emails and docs directly in Gmail is a huge time saver."},color:"#00b8ff",date:"Mar 2025"},
+      {author:"Zeynep O.",role:"Öğretmen",stars:4,text:{tr:"Sınıf materyalleri hazırlamak için kullanıyorum. YouTube videolarını analiz etmesi harika bir özellik.",en:"I use it to prepare classroom materials. Analyzing YouTube videos is a killer feature."},color:"#00e5a0",date:"Feb 2025"},
+      {author:"Funda L.",role:"Serbest Tasarımcı",stars:5,text:{tr:"Görsel anlama kapasitesi inanılmaz. Tasarım dosyasını yükle, anında detaylı geri bildirim al.",en:"Visual understanding is phenomenal. Upload a design file and get detailed feedback instantly."},color:"#fd7b4d",date:"Dec 2024"},
+      {author:"Ozan K.",role:"Veri Analisti",stars:3,text:{tr:"Güçlü ama bazen tutarsız. Google entegrasyonları dışında rakiplerinin gerisinde kalabiliyor.",en:"Strong but sometimes inconsistent. Outside of Google integrations it can lag behind rivals."},color:"#6c5ce7",date:"Jan 2025"},
+      {author:"Iris W.",role:"Gazeteci",stars:4,text:{tr:"Cevaplara entegre gerçek zamanlı arama sonuçları son dakika haberleri için gerçekten kullanışlı.",en:"Real-time search results integrated into answers is genuinely useful for breaking news."},color:"#f5c842",date:"Nov 2024"},
     ]
   },
   "Perplexity AI":{
-    featured:{author:"Alp D.",role:"Journalist / Gazeteci",stars:5,text:"I no longer spend hours scanning news. Perplexity summarizes with sources shown.",color:"#6c5ce7"},
+    featured:{author:"Alp D.",role:"Gazeteci",stars:5,text:{tr:"Artık haberleri taramak için saatler harcamıyorum. Perplexity kaynakları göstererek özetliyor.",en:"I no longer spend hours scanning news. Perplexity summarizes with sources shown."},color:"#6c5ce7"},
     all:[
-      {author:"Alp D.",role:"Journalist",stars:5,text:"I no longer spend hours scanning news. Perplexity summarizes with sources clearly shown — I can verify everything.",color:"#6c5ce7",date:"Mar 2025"},
-      {author:"Hande N.",role:"Research Specialist",stars:5,text:"Cut my academic research time in half. The ability to verify sources is a big trust booster.",color:"#00e5a0",date:"Feb 2025"},
-      {author:"Serkan F.",role:"Student",stars:4,text:"Way more efficient than Google. My go-to for any assignment research now.",color:"#fd7b4d",date:"Jan 2025"},
-      {author:"Tom B.",role:"Consultant",stars:5,text:"Industry analysis in minutes instead of hours. The Pro plan with GPT-4 is worth every cent.",color:"#00b8ff",date:"Dec 2024"},
-      {author:"Mei L.",role:"Medical Student",stars:4,text:"Helpful for clinical research summaries. Citations from PubMed are a bonus.",color:"#f5c842",date:"Nov 2024"},
+      {author:"Alp D.",role:"Gazeteci",stars:5,text:{tr:"Artık haberleri taramak için saatler harcamıyorum. Perplexity kaynakları açıkça göstererek özetliyor — her şeyi doğrulayabiliyorum.",en:"I no longer spend hours scanning news. Perplexity summarizes with sources clearly shown — I can verify everything."},color:"#6c5ce7",date:"Mar 2025"},
+      {author:"Hande N.",role:"Araştırma Uzmanı",stars:5,text:{tr:"Akademik araştırma süremizi yarıya indirdi. Kaynakları doğrulama imkânı büyük bir güven artırıcı.",en:"Cut my academic research time in half. The ability to verify sources is a big trust booster."},color:"#00e5a0",date:"Feb 2025"},
+      {author:"Serkan F.",role:"Öğrenci",stars:4,text:{tr:"Google'dan çok daha verimli. Artık her ödev araştırmam için ilk tercihim.",en:"Way more efficient than Google. My go-to for any assignment research now."},color:"#fd7b4d",date:"Jan 2025"},
+      {author:"Tom B.",role:"Danışman",stars:5,text:{tr:"Saatler yerine dakikalarda sektör analizi. GPT-4 ile Pro plan her kuruşuna değiyor.",en:"Industry analysis in minutes instead of hours. The Pro plan with GPT-4 is worth every cent."},color:"#00b8ff",date:"Dec 2024"},
+      {author:"Mei L.",role:"Tıp Öğrencisi",stars:4,text:{tr:"Klinik araştırma özetleri için yardımcı. PubMed atıfları bonus niteliğinde.",en:"Helpful for clinical research summaries. Citations from PubMed are a bonus."},color:"#f5c842",date:"Nov 2024"},
     ]
   },
   "GitHub Copilot":{
-    featured:{author:"Barış T.",role:"Senior Developer",stars:5,text:"My coding productivity went up 40%. Writing boilerplate is no longer stressful.",color:"#6c5ce7"},
+    featured:{author:"Barış T.",role:"Kıdemli Geliştirici",stars:5,text:{tr:"Kodlama verimliliğim %40 arttı. Boilerplate yazmak artık stres vermiyor.",en:"My coding productivity went up 40%. Writing boilerplate is no longer stressful."},color:"#6c5ce7"},
     all:[
-      {author:"Barış T.",role:"Senior Developer",stars:5,text:"My coding productivity went up 40%. Writing boilerplate is no longer stressful.",color:"#6c5ce7",date:"Mar 2025"},
-      {author:"Nazlı Y.",role:"Junior Developer",stars:5,text:"Great for learning new technologies. I study the suggestions to understand patterns.",color:"#00e5a0",date:"Feb 2025"},
-      {author:"Emre C.",role:"Freelance Dev",stars:4,text:"Occasionally suggests out-of-context code, but overall saves a lot of time.",color:"#fd7b4d",date:"Jan 2025"},
-      {author:"Pınar A.",role:"Full Stack Dev",stars:5,text:"VS Code integration is flawless. Feels like having a senior dev sitting next to me.",color:"#00b8ff",date:"Dec 2024"},
-      {author:"Jake R.",role:"DevOps Engineer",stars:4,text:"Solid for Terraform and YAML generation. Occasionally needs a nudge for complex configs.",color:"#f5c842",date:"Nov 2024"},
-      {author:"Ana C.",role:"Frontend Dev",stars:5,text:"React component suggestions are impressively accurate. Cuts my dev time by a third.",color:"#a29bfe",date:"Oct 2024"},
+      {author:"Barış T.",role:"Kıdemli Geliştirici",stars:5,text:{tr:"Kodlama verimliliğim %40 arttı. Boilerplate yazmak artık stres vermiyor.",en:"My coding productivity went up 40%. Writing boilerplate is no longer stressful."},color:"#6c5ce7",date:"Mar 2025"},
+      {author:"Nazlı Y.",role:"Junior Geliştirici",stars:5,text:{tr:"Yeni teknolojiler öğrenmek için harika. Önerileri inceleyerek kalıpları anlıyorum.",en:"Great for learning new technologies. I study the suggestions to understand patterns."},color:"#00e5a0",date:"Feb 2025"},
+      {author:"Emre C.",role:"Serbest Geliştirici",stars:4,text:{tr:"Zaman zaman bağlam dışı kod öneriyor ama genel olarak çok zaman kazandırıyor.",en:"Occasionally suggests out-of-context code, but overall saves a lot of time."},color:"#fd7b4d",date:"Jan 2025"},
+      {author:"Pınar A.",role:"Full Stack Geliştirici",stars:5,text:{tr:"VS Code entegrasyonu kusursuz. Yanında kıdemli bir geliştirici varmış gibi hissettiriyor.",en:"VS Code integration is flawless. Feels like having a senior dev sitting next to me."},color:"#00b8ff",date:"Dec 2024"},
+      {author:"Jake R.",role:"DevOps Mühendisi",stars:4,text:{tr:"Terraform ve YAML üretimi için sağlam. Karmaşık konfigürasyonlarda zaman zaman yönlendirme gerekiyor.",en:"Solid for Terraform and YAML generation. Occasionally needs a nudge for complex configs."},color:"#f5c842",date:"Nov 2024"},
+      {author:"Ana C.",role:"Frontend Geliştirici",stars:5,text:{tr:"React component önerileri etkileyici derecede doğru. Geliştirme süremizi üçte bir kısalttı.",en:"React component suggestions are impressively accurate. Cuts my dev time by a third."},color:"#a29bfe",date:"Oct 2024"},
     ]
   },
   "Cursor":{
-    featured:{author:"Cem K.",role:"Startup Founder",stars:5,text:"I shipped my MVP in 3 days with Cursor. It would have taken 3 weeks before.",color:"#00e5a0"},
+    featured:{author:"Cem K.",role:"Startup Kurucusu",stars:5,text:{tr:"MVP'mi 3 günde teslim ettim. Cursor olmadan 3 hafta sürerdi.",en:"I shipped my MVP in 3 days with Cursor. It would have taken 3 weeks before."},color:"#00e5a0"},
     all:[
       {author:"Cem K.",role:"Startup Founder",stars:5,text:"I shipped my MVP in 3 days with Cursor. It would have taken 3 weeks before.",color:"#00e5a0",date:"Mar 2025"},
       {author:"İrem B.",role:"Product Designer",stars:5,text:"I can't code but with Cursor I build my own tools. It literally changed my career.",color:"#6c5ce7",date:"Feb 2025"},
@@ -474,7 +492,7 @@ const REVIEWS = {
     ]
   },
   "Midjourney":{
-    featured:{author:"Ayça M.",role:"Graphic Designer",stars:5,text:"Creating visuals from a brief went from 2 days to 2 hours. Truly unmatched.",color:"#fd7b4d"},
+    featured:{author:"Ayça M.",role:"Grafik Tasarımcı",stars:5,text:{tr:"Brief'ten görsel üretmek 2 günden 2 saate indi. Gerçekten rakipsiz.",en:"Creating visuals from a brief went from 2 days to 2 hours. Truly unmatched."},color:"#fd7b4d"},
     all:[
       {author:"Ayça M.",role:"Graphic Designer",stars:5,text:"Creating visuals from a brief went from 2 days to 2 hours. Truly unmatched.",color:"#fd7b4d",date:"Mar 2025"},
       {author:"Tolga R.",role:"Digital Artist",stars:5,text:"v6 realism is mind-blowing. Fine-tuned it on my own style in a weekend.",color:"#6c5ce7",date:"Feb 2025"},
@@ -485,7 +503,7 @@ const REVIEWS = {
     ]
   },
   "DALL-E 3":{
-    featured:{author:"Nadia K.",role:"Social Media Manager",stars:4,text:"The ChatGPT integration means I can describe complex scenes conversationally and get exactly what I want.",color:"#00b8ff"},
+    featured:{author:"Nadia K.",role:"Sosyal Medya Yöneticisi",stars:4,text:{tr:"ChatGPT entegrasyonu sayesinde karmaşık sahneleri doğal dille anlatıp tam istediğimi alıyorum.",en:"The ChatGPT integration means I can describe complex scenes conversationally and get exactly what I want."},color:"#00b8ff"},
     all:[
       {author:"Nadia K.",role:"Social Media Manager",stars:4,text:"The ChatGPT integration means I can describe complex scenes conversationally and get exactly what I want.",color:"#00b8ff",date:"Mar 2025"},
       {author:"Fatih O.",role:"Blogger",stars:4,text:"Perfect for blog featured images. I generate 5-6 variations and pick the best.",color:"#00e5a0",date:"Feb 2025"},
@@ -495,7 +513,7 @@ const REVIEWS = {
     ]
   },
   "ElevenLabs":{
-    featured:{author:"Koray S.",role:"Podcast Producer",stars:5,text:"Even when I don't have a guest, I can fill an episode with an ElevenLabs voice clone.",color:"#00e5a0"},
+    featured:{author:"Koray S.",role:"Podcast Yapımcısı",stars:5,text:{tr:"Konuğum olmadığında bile ElevenLabs ses klonoyla bölümü doldurabilirim.",en:"Even when I don't have a guest, I can fill an episode with an ElevenLabs voice clone."},color:"#00e5a0"},
     all:[
       {author:"Koray S.",role:"Podcast Producer",stars:5,text:"Even when I don't have a guest, I can fill an episode with an ElevenLabs voice clone.",color:"#00e5a0",date:"Mar 2025"},
       {author:"Deniz A.",role:"YouTuber",stars:5,text:"Turkish voice quality is now indistinguishable from a real person. Subscribers have no idea.",color:"#6c5ce7",date:"Feb 2025"},
@@ -505,7 +523,7 @@ const REVIEWS = {
     ]
   },
   "Suno AI":{
-    featured:{author:"Berk T.",role:"Musician / Müzisyen",stars:5,text:"Instant demo and jingle production. I show clients a concept in minutes now.",color:"#f5c842"},
+    featured:{author:"Berk T.",role:"Müzisyen",stars:5,text:{tr:"Anında demo ve jingle üretimi. Artık müşterilere dakikalar içinde konsept gösterebiliyorum.",en:"Instant demo and jingle production. I show clients a concept in minutes now."},color:"#f5c842"},
     all:[
       {author:"Berk T.",role:"Musician",stars:5,text:"Instant demo and jingle production. I show clients a concept in minutes now.",color:"#f5c842",date:"Mar 2025"},
       {author:"Ece D.",role:"Content Creator",stars:5,text:"I generate original music for my videos — no copyright worries, complete creative freedom.",color:"#00b8ff",date:"Feb 2025"},
@@ -515,7 +533,7 @@ const REVIEWS = {
     ]
   },
   "Runway ML":{
-    featured:{author:"Kaan B.",role:"Video Producer",stars:5,text:"We cut post-production costs by 60% on ad films.",color:"#fd7b4d"},
+    featured:{author:"Kaan B.",role:"Video Yapımcısı",stars:5,text:{tr:"Reklam filmlerinde post-prodüksiyon maliyetlerini %60 düşürdük.",en:"We cut post-production costs by 60% on ad films."},color:"#fd7b4d"},
     all:[
       {author:"Kaan B.",role:"Video Producer",stars:5,text:"We cut post-production costs by 60% on ad films. The Gen-2 motion brush is incredible.",color:"#fd7b4d",date:"Mar 2025"},
       {author:"Asya T.",role:"YouTuber",stars:4,text:"Creating impressive short films with Gen-2. The creative industry hasn't seen anything like this.",color:"#00e5a0",date:"Feb 2025"},
@@ -611,12 +629,12 @@ const REVIEWS = {
 function getR(name){
   if(REVIEWS[name]) return REVIEWS[name];
   return {
-    featured:{author:"User",role:"Reviewer",stars:4,text:"Met my expectations. Would recommend to others.",color:"#6c5ce7"},
+    featured:{author:"Kullanıcı",role:"Değerlendirici",stars:4,text:{tr:"Beklentilerimi karşıladı. Başkalarına da öneririm.",en:"Met my expectations. Would recommend to others."},color:"#6c5ce7"},
     all:[
-      {author:"User A",role:"Professional",stars:5,text:"Excellent tool. Made my workflow significantly faster.",color:"#6c5ce7",date:"Mar 2025"},
-      {author:"User B",role:"Student",stars:4,text:"Very helpful overall. A few rough edges but nothing deal-breaking.",color:"#00b8ff",date:"Feb 2025"},
-      {author:"User C",role:"Entrepreneur",stars:4,text:"Good value for the price. I use it daily.",color:"#fd7b4d",date:"Jan 2025"},
-      {author:"User D",role:"Designer",stars:3,text:"Solid but room to improve. Looking forward to future updates.",color:"#00e5a0",date:"Dec 2024"},
+      {author:"Kullanıcı A",role:"Profesyonel",stars:5,text:{tr:"Harika bir araç. İş akışımı önemli ölçüde hızlandırdı.",en:"Excellent tool. Made my workflow significantly faster."},color:"#6c5ce7",date:"Mar 2025"},
+      {author:"Kullanıcı B",role:"Öğrenci",stars:4,text:{tr:"Genel olarak çok yardımcı. Birkaç küçük eksiklik var ama ciddi bir sorun değil.",en:"Very helpful overall. A few rough edges but nothing deal-breaking."},color:"#00b8ff",date:"Feb 2025"},
+      {author:"Kullanıcı C",role:"Girişimci",stars:4,text:{tr:"Fiyatına göre iyi değer. Her gün kullanıyorum.",en:"Good value for the price. I use it daily."},color:"#fd7b4d",date:"Jan 2025"},
+      {author:"Kullanıcı D",role:"Tasarımcı",stars:3,text:{tr:"Sağlam ama gelişime açık. Gelecekteki güncellemeleri bekliyorum.",en:"Solid but room to improve. Looking forward to future updates."},color:"#00e5a0",date:"Dec 2024"},
     ]
   };
 }
@@ -785,21 +803,50 @@ function closePanel(id){
   document.body.style.overflow='';
 }
 
+let _currentRevData = [];
+let _currentRevFilter = 0;
+
+function getRevText(r){ return typeof r.text==='object' ? (r.text[lang]||r.text.tr) : r.text; }
+
+function renderRevCards(filter){
+  _currentRevFilter = filter;
+  // filtre butonlarını güncelle
+  document.querySelectorAll('.rsf-btn').forEach(b=>{
+    b.classList.toggle('active', Number(b.dataset.star)===filter);
+  });
+  const cont=document.getElementById('revPanelBody');
+  cont.innerHTML='';
+  const filtered = filter===0 ? _currentRevData : _currentRevData.filter(r=>r.stars===filter);
+  if(filtered.length===0){
+    const empty=document.createElement('div');
+    empty.className='rev-no-result';
+    empty.textContent = lang==='tr' ? 'Bu yıldız sayısında yorum bulunamadı.' : 'No reviews found for this rating.';
+    cont.appendChild(empty); return;
+  }
+  filtered.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='review-card';
+    el.innerHTML=`<div class="rc-top"><div class="rc-avatar" style="background:${r.color}">${r.author[0]}</div><div style="flex:1"><div class="rc-name">${r.author}</div><div class="rc-meta">${r.role}</div></div><div class="rc-stars">${starsStr(r.stars)}</div></div><div class="rc-text">${getRevText(r)}</div><div class="rc-date">${r.date||'2025'}</div>`;
+    cont.appendChild(el);
+  });
+}
+
+function filterRevStars(star){ renderRevCards(star); }
+
 function openReviews(name,stars,reviewCnt){
   const d=getR(name);
+  _currentRevData = d.all;
+  _currentRevFilter = 0;
   document.getElementById('revPanelTitle').textContent=name;
   document.getElementById('revPanelSub').textContent=t('reviews_panel_sub')(reviewCnt);
   document.getElementById('revAvgNum').textContent=Number(stars).toFixed(1);
   document.getElementById('revAvgStars').innerHTML=starsStr(stars);
   document.getElementById('revAvgCount').textContent=t('reviews_count')(reviewCnt);
-  const cont=document.getElementById('revPanelBody');
-  cont.innerHTML='';
-  d.all.forEach(r=>{
-    const el=document.createElement('div');
-    el.className='review-card';
-    el.innerHTML=`<div class="rc-top"><div class="rc-avatar" style="background:${r.color}">${r.author[0]}</div><div style="flex:1"><div class="rc-name">${r.author}</div><div class="rc-meta">${r.role}</div></div><div class="rc-stars">${starsStr(r.stars)}</div></div><div class="rc-text">${r.text}</div><div class="rc-date">${r.date||'2025'}</div>`;
-    cont.appendChild(el);
-  });
+  // filtre buton etiketlerini dile göre güncelle
+  const allBtn = document.querySelector('.rsf-btn[data-star="0"]');
+  if(allBtn) allBtn.textContent = lang==='tr'?'Tümü':'All';
+  // yıldız dağılımı rozet sayılarını güncelle
+  renderRevCards(0);
   openPanel('rev');
 }
 
@@ -897,13 +944,19 @@ async function computeRankedWithGemini(tools, userPrompt, category, budget){
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ tools, userPrompt, category, budget, lang })
   });
-  if(!response.ok) throw new Error('Gemini API hatası');
+  if(!response.ok) throw new Error('Netlify function HTTP ' + response.status);
   const data = await response.json();
-  // Gemini'nin sıralamasını DB'deki tam tool objesiyle birleştir
-  return data.ranked.map(r => {
+  if(!data.ranked || !Array.isArray(data.ranked) || data.ranked.length === 0){
+    throw new Error('Gemini bos veya gecersiz yanit dondu');
+  }
+  // Gemini sirasini DB tool objesiyle birlestir
+  const merged = data.ranked.map(r => {
     const tool = tools.find(t => t.name === r.name);
+    if(!tool) return null;
     return { ...tool, overall: r.overall, geminiWhy: r.why };
   }).filter(Boolean);
+  if(merged.length === 0) throw new Error('Hic eslesen arac bulunamadi');
+  return merged;
 }
 
 // Fallback: Gemini hata verirse eski matematik kullanılır
@@ -966,7 +1019,7 @@ function renderCards(ranked){
           <div class="rev-body">
             <div class="rev-stars">${starsStr(fr.stars)}</div>
             <div class="rev-author">${fr.author} · ${fr.role}</div>
-            <div class="rev-text">"${fr.text}"</div>
+            <div class="rev-text">"${typeof fr.text==='object'?(fr.text[lang]||fr.text.tr):fr.text}"</div>
           </div>
         </div>
         <div class="rev-cta">${t('rev_cta')}</div>
@@ -990,15 +1043,37 @@ async function findAI(){
   btn.querySelector('[data-i18n]').textContent=lang==='tr'?'AI analiz ediyor...':'AI is analyzing...';
   document.getElementById('resultsSection').style.display='none';
   document.getElementById('loadingState').style.display='block';
-  let tools=DB[cat]||DB.sohbet;
-  if(budget==='ücretsiz') tools=tools.filter(t=>t.tag==='free');
-  else if(budget==='freemium') tools=tools.filter(t=>t.tag!=='paid');
-  if(tools.length<3) tools=DB[cat]||DB.sohbet;
+  let allTools=DB[cat]||DB.sohbet;
+  let tools=allTools;
+  let budgetFiltered=false;
+  let budgetNotice='';
+  if(budget==='ücretsiz'){
+    const filtered=allTools.filter(t=>t.tag==='free');
+    if(filtered.length>=2){tools=filtered;budgetFiltered=true;}
+    else{budgetNotice=lang==='tr'?'⚠️ Bu kategoride yeterli ücretsiz araç bulunamadı. Freemium ve ücretli araçlar da gösteriliyor.':'⚠️ Not enough free tools in this category. Freemium and paid tools are also shown.';}
+  } else if(budget==='freemium'){
+    const filtered=allTools.filter(t=>t.tag!=='paid');
+    if(filtered.length>=2){tools=filtered;budgetFiltered=true;}
+    else{budgetNotice=lang==='tr'?'⚠️ Bu kategoride yeterli freemium araç bulunamadı. Ücretli araçlar da gösteriliyor.':'⚠️ Not enough freemium tools in this category. Paid tools are also shown.';}
+  }
+  // resultsSection'daki notice'ı göster/gizle
+  let noticeEl=document.getElementById('budgetNoticeEl');
+  if(!noticeEl){noticeEl=document.createElement('div');noticeEl.id='budgetNoticeEl';noticeEl.className='budget-notice';document.getElementById('resultsSection').insertBefore(noticeEl,document.getElementById('aiCards'));}
+  noticeEl.textContent=budgetNotice;
+  noticeEl.style.display=budgetNotice?'block':'none';
   try {
     lastRanked = await computeRankedWithGemini(tools, prompt, cat, budget);
+    console.log('[Nirengi] Gemini sıralama başarılı, araç sayısı:', lastRanked.length);
   } catch(err) {
-    console.warn('Gemini hatası, fallback kullanılıyor:', err);
+    console.warn('[Nirengi] Gemini hatası, fallback kullanılıyor:', err.message);
     lastRanked = computeRankedFallback(tools, prompt);
+  }
+  if(!lastRanked || lastRanked.length === 0){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('searchBtn').disabled=false;
+    document.getElementById('searchBtn').querySelector('[data-i18n]').textContent=t('btn_search');
+    alert(lang==='tr'?'Sonuç bulunamadı, lütfen tekrar deneyin.':'No results found, please try again.');
+    return;
   }
   document.getElementById('loadingState').style.display='none';
   renderCards(lastRanked);
