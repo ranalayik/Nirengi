@@ -889,9 +889,25 @@ function starsDisp(v){let s='',f=Math.floor(v);for(let i=0;i<f;i++)s+='★';if(v
 function tagCls(t){return t==='free'?'tag-free':t==='freemium'?'tag-freemium':'tag-paid';}
 function tagLbl(tag){return I18N[lang][`tag_${tag}`]||tag;}
 function rankCls(i){return i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';}
-function whyMsg(i){const m=t('why_msgs');return m[Math.min(i,m.length-1)];}
+function whyMsg(i,tool){if(tool&&tool.geminiWhy)return '<strong>✦ AI:</strong> '+tool.geminiWhy;const m=t('why_msgs');return m[Math.min(i,m.length-1)];}
 
-function computeRanked(tools,prompt){
+async function computeRankedWithGemini(tools, userPrompt, category, budget){
+  const response = await fetch('/.netlify/functions/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ tools, userPrompt, category, budget, lang })
+  });
+  if(!response.ok) throw new Error('Gemini API hatası');
+  const data = await response.json();
+  // Gemini'nin sıralamasını DB'deki tam tool objesiyle birleştir
+  return data.ranked.map(r => {
+    const tool = tools.find(t => t.name === r.name);
+    return { ...tool, overall: r.overall, geminiWhy: r.why };
+  }).filter(Boolean);
+}
+
+// Fallback: Gemini hata verirse eski matematik kullanılır
+function computeRankedFallback(tools,prompt){
   const lo=prompt.toLowerCase();
   return tools.map(tool=>{
     const desc=typeof tool.desc==='object'?tool.desc.tr+' '+tool.desc.en:tool.desc;
@@ -929,7 +945,7 @@ function renderCards(ranked){
             <span class="ai-tag ${tagCls(tool.tag)}">${tagLbl(tool.tag)}</span>
           </div>
           <div class="ai-desc">${desc}</div>
-          <div class="ai-why">${whyMsg(i)}</div>
+          <div class="ai-why">${whyMsg(i,tool)}</div>
           <div class="ai-scores">
             <div class="score-item"><div class="score-label">${t('score_tech')}</div><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill fill-tech" style="width:${tool.tech}%"></div></div><span class="score-val">${tool.tech}</span></div></div>
             <div class="score-item"><div class="score-label">${t('score_user')}</div><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill fill-user" style="width:${tool.user}%"></div></div><span class="score-val">${tool.user}</span></div></div>
@@ -971,15 +987,19 @@ async function findAI(){
   if(!prompt||prompt.length<10){alert(t('err_prompt'));return;}
   const btn=document.getElementById('searchBtn');
   btn.disabled=true;
-  btn.querySelector('[data-i18n]').textContent=lang==='tr'?'Hesaplanıyor...':'Calculating...';
+  btn.querySelector('[data-i18n]').textContent=lang==='tr'?'AI analiz ediyor...':'AI is analyzing...';
   document.getElementById('resultsSection').style.display='none';
   document.getElementById('loadingState').style.display='block';
-  await new Promise(r=>setTimeout(r,1500));
   let tools=DB[cat]||DB.sohbet;
   if(budget==='ücretsiz') tools=tools.filter(t=>t.tag==='free');
   else if(budget==='freemium') tools=tools.filter(t=>t.tag!=='paid');
   if(tools.length<3) tools=DB[cat]||DB.sohbet;
-  lastRanked=computeRanked(tools,prompt);
+  try {
+    lastRanked = await computeRankedWithGemini(tools, prompt, cat, budget);
+  } catch(err) {
+    console.warn('Gemini hatası, fallback kullanılıyor:', err);
+    lastRanked = computeRankedFallback(tools, prompt);
+  }
   document.getElementById('loadingState').style.display='none';
   renderCards(lastRanked);
   const sec=document.getElementById('resultsSection');
