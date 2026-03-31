@@ -76,7 +76,7 @@ python3 -m http.server 8080
 
 ## 🌐 Yayın Linki
 
-> 🔗 [https://www.loom.com/share/7fa453a9d5374562ac37bce243e29ec4]
+> 🔗 [https://zingy-macaron-0c690d.netlify.app/]
 
 ---
 
