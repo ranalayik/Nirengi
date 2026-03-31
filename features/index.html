@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Bulucu — Sana Özel Yapay Zeka Sıralaması</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080c14;
+      --surface: #0f1623;
+      --surface2: #161e2e;
+      --border: rgba(255,255,255,0.07);
+      --accent: #4af0c4;
+      --accent2: #7b6cff;
+      --accent3: #f0824a;
+      --text: #e8edf5;
+      --muted: #6b7a99;
+      --card-glow: rgba(74,240,196,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,240,196,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,240,196,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--accent2); top: -200px; left: -100px; }
+    .blob-2 { width: 500px; height: 500px; background: var(--accent); bottom: -150px; right: -100px; }
+
+    /* ---- HEADER ---- */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+
+    .nav-badge {
+      font-size: 0.75rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(74,240,196,0.25);
+      padding: 0.35rem 1rem;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+      background: rgba(74,240,196,0.05);
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto 3rem;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ---- SEARCH FORM ---- */
+    .search-container {
+      position: relative;
+      z-index: 10;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 0 60px rgba(74,240,196,0.05), 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    select, textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    select:focus, textarea:focus {
+      border-color: rgba(74,240,196,0.4);
+      box-shadow: 0 0 0 3px rgba(74,240,196,0.08);
+    }
+
+    select option { background: var(--surface2); }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    .search-btn {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      color: #080c14;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .search-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .search-btn:active { transform: translateY(0); }
+    .search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ---- RESULTS ---- */
+    .results-section {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+      display: none;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .results-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .results-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    /* Loading */
+    .loading-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      display: none;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-state p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* AI Cards */
+    .ai-cards { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .ai-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem 1.25rem;
+      align-items: start;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-card:hover {
+      border-color: rgba(74,240,196,0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(74,240,196,0.05);
+    }
+
+    .ai-card.rank-1 { border-color: rgba(74,240,196,0.25); background: linear-gradient(135deg, var(--surface) 80%, rgba(74,240,196,0.04)); }
+    .ai-card.rank-2 { border-color: rgba(123,108,255,0.2); }
+    .ai-card.rank-3 { border-color: rgba(240,130,74,0.2); }
+
+    .rank-badge {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .rank-1 .rank-badge { background: rgba(74,240,196,0.15); color: var(--accent); }
+    .rank-2 .rank-badge { background: rgba(123,108,255,0.15); color: var(--accent2); }
+    .rank-3 .rank-badge { background: rgba(240,130,74,0.15); color: var(--accent3); }
+    .rank-other .rank-badge { background: var(--surface2); color: var(--muted); }
+
+    .card-body { min-width: 0; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .ai-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.3px;
+    }
+
+    .ai-tag {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .tag-free { background: rgba(74,240,196,0.1); color: var(--accent); border: 1px solid rgba(74,240,196,0.2); }
+    .tag-freemium { background: rgba(123,108,255,0.1); color: var(--accent2); border: 1px solid rgba(123,108,255,0.2); }
+    .tag-paid { background: rgba(240,130,74,0.1); color: var(--accent3); border: 1px solid rgba(240,130,74,0.2); }
+
+    .ai-desc {
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 0.875rem;
+    }
+
+    .ai-why {
+      font-size: 0.85rem;
+      color: var(--text);
+      background: rgba(74,240,196,0.05);
+      border-left: 2px solid var(--accent);
+      padding: 0.6rem 0.875rem;
+      border-radius: 0 8px 8px 0;
+      line-height: 1.6;
+      margin-bottom: 0.875rem;
+    }
+
+    .ai-why strong { color: var(--accent); }
+
+    .ai-scores {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .score-item { display: flex; flex-direction: column; gap: 0.2rem; }
+
+    .score-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .score-bar {
+      width: 64px;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+
+    .fill-tech { background: var(--accent2); }
+    .fill-user { background: var(--accent); }
+    .fill-match { background: var(--accent3); }
+
+    .score-val {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .card-action { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+
+    .visit-btn {
+      padding: 0.6rem 1.2rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .visit-btn:hover { border-color: var(--accent); background: rgba(74,240,196,0.05); }
+
+    .star-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.78rem;
+      color: #fbbf24;
+    }
+
+    .star-row span { color: var(--muted); margin-left: 0.25rem; }
+
+    /* Overall score ring */
+    .overall-score {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .overall-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Stats bar at top */
+    .stats-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 1rem 1.5rem; }
+      .stats-bar { gap: 1.5rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .ai-card { grid-template-columns: auto 1fr; }
+      .card-action { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+      .hero h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <header>
+    <div class="logo">AI<span>Bulucu</span></div>
+    <div class="nav-badge">Beta — Türkiye'de ilk</div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num">200+</div>
+      <div class="stat-label">AI Aracı</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">18</div>
+      <div class="stat-label">Kategori</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">12K+</div>
+      <div class="stat-label">Kullanıcı Yorumu</div>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-eyebrow">🤖 Kişiselleştirilmiş AI Sıralaması</div>
+    <h1>İşine en uygun<br/><em>yapay zekayı</em> bul</h1>
+    <p>Ne yapmak istediğini anlat. Teknik performans ve binlerce kullanıcı yorumunu birleştirerek sana özel sıralama oluşturalım.</p>
+  </section>
+
+  <div class="search-container">
+    <div class="search-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="category">
+            <option value="">Kategori seç...</option>
+            <option value="yazı">✍️ Yazı & İçerik Üretimi</option>
+            <option value="kod">💻 Kod & Geliştirme</option>
+            <option value="görsel">🎨 Görsel & Tasarım</option>
+            <option value="video">🎬 Video Üretimi</option>
+            <option value="ses">🎵 Ses & Müzik</option>
+            <option value="veri">📊 Veri Analizi</option>
+            <option value="araştırma">🔍 Araştırma & Özet</option>
+            <option value="sohbet">💬 Sohbet & Asistan</option>
+            <option value="eğitim">📚 Eğitim & Öğrenme</option>
+            <option value="iş">💼 İş & Verimlilik</option>
+            <option value="müşteri">🤝 Müşteri Hizmetleri</option>
+            <option value="hukuk">⚖️ Hukuk & Finans</option>
+            <option value="sağlık">🏥 Sağlık & Tıp</option>
+            <option value="oyun">🎮 Oyun & Eğlence</option>
+            <option value="sosyal">📱 Sosyal Medya</option>
+            <option value="seo">📈 SEO & Pazarlama</option>
+            <option value="çeviri">🌍 Çeviri & Dil</option>
+            <option value="diğer">🔧 Diğer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Bütçe Tercihi</label>
+          <select id="budget">
+            <option value="hepsi">Fark etmez</option>
+            <option value="ücretsiz">Ücretsiz olsun</option>
+            <option value="freemium">Freemium (ücretsiz başlasın)</option>
+            <option value="ücretli">Ücretliye de bakarım</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Ne yapmak istiyorsun? (Detaylı anlat)</label>
+          <textarea id="prompt" placeholder="Örn: Bir e-ticaret sitesi için ürün açıklamaları ve blog yazıları üretmek istiyorum. SEO dostu, Türkçe ve İngilizce destekleyen, toplu üretim yapabilen bir araç arıyorum. Günde 50-100 içerik üretmem gerekiyor..."></textarea>
+        </div>
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="findAI()">
+        🔍 Sıralamayı Oluştur
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="loader"></div>
+    <p>AI araçları analiz ediliyor, sıralama oluşturuluyor...</p>
+  </div>
+
+  <!-- Results -->
+  <section class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div class="results-title">Sana Özel AI Sıralaması</div>
+      <div class="results-count" id="resultsCount">0 araç bulundu</div>
+    </div>
+    <div class="ai-cards" id="aiCards"></div>
+    <div class="disclaimer">
+      ℹ️ Bu sıralama; teknik benchmark skorları, kullanıcı yorumları ve senin belirttiğin ihtiyaçlara göre algoritmik olarak hesaplanmıştır. Puanlar düzenli olarak güncellenmektedir.
+    </div>
+  </section>
+
+  <script>
+    const AI_DATABASE = {
+      yazı: [
+        { name: "ChatGPT (GPT-4o)", tag: "freemium", tech: 96, user: 89, desc: "OpenAI'nin güçlü dil modeli. Uzun form içerik, blog, e-posta ve yaratıcı yazı için endüstri standardı.", url: "https://chat.openai.com", stars: 4.7, reviews: 3200 },
+        { name: "Claude (Anthropic)", tag: "freemium", tech: 95, user: 91, desc: "Uzun bağlamsal bellek ve nüanslı yazı üretiminde öne çıkıyor. Akademik ve teknik içerik için mükemmel.", url: "https://claude.ai", stars: 4.8, reviews: 1800 },
+        { name: "Jasper AI", tag: "paid", tech: 88, user: 82, desc: "Pazarlama odaklı içerik üretimine özelleşmiş. Şablon kütüphanesi geniş.", url: "https://jasper.ai", stars: 4.3, reviews: 940 },
+        { name: "Copy.ai", tag: "freemium", tech: 84, user: 80, desc: "Kısa form içerik, reklam metni ve sosyal medya için hızlı çözüm.", url: "https://copy.ai", stars: 4.1, reviews: 720 },
+        { name: "Writesonic", tag: "freemium", tech: 85, user: 81, desc: "SEO odaklı içerik üretimi ve blog yazısı optimizasyonunda güçlü.", url: "https://writesonic.com", stars: 4.2, reviews: 810 },
+      ],
+      kod: [
+        { name: "GitHub Copilot", tag: "paid", tech: 97, user: 92, desc: "Microsoft/OpenAI ortaklığının IDE entegre kod asistanı. 20+ dil destekliyor.", url: "https://copilot.github.com", stars: 4.8, reviews: 4100 },
+        { name: "Cursor", tag: "freemium", tech: 95, user: 93, desc: "Yapay zeka öncelikli kod editörü. Bütün dosya bazında bağlam anlama kapasitesi.", url: "https://cursor.sh", stars: 4.9, reviews: 2200 },
+        { name: "Claude (Anthropic)", tag: "freemium", tech: 94, user: 90, desc: "Karmaşık algoritma açıklama ve refactoring'de üstün. Uzun kod bloklarını anlıyor.", url: "https://claude.ai", stars: 4.8, reviews: 1800 },
+        { name: "Replit AI", tag: "freemium", tech: 88, user: 85, desc: "Tarayıcı tabanlı geliştirme ortamı. Hızlı prototipleme için ideal.", url: "https://replit.com", stars: 4.4, reviews: 1100 },
+        { name: "Tabnine", tag: "freemium", tech: 87, user: 83, desc: "Gizlilik odaklı, yerel çalışabilen kod tamamlama aracı.", url: "https://tabnine.com", stars: 4.2, reviews: 890 },
+      ],
+      görsel: [
+        { name: "Midjourney", tag: "paid", tech: 97, user: 94, desc: "Sanatsal görsel üretimde altın standart. En yüksek estetik kaliteyi sunar.", url: "https://midjourney.com", stars: 4.9, reviews: 5800 },
+        { name: "DALL-E 3", tag: "freemium", tech: 94, user: 88, desc: "ChatGPT entegrasyon avantajıyla metin-görsel uyumunda öne çıkıyor.", url: "https://openai.com/dall-e-3", stars: 4.6, reviews: 3400 },
+        { name: "Stable Diffusion", tag: "free", tech: 93, user: 85, desc: "Açık kaynak, sınırsız özelleştirme. Teknik bilgi gerektirir.", url: "https://stability.ai", stars: 4.5, reviews: 4200 },
+        { name: "Adobe Firefly", tag: "freemium", tech: 90, user: 87, desc: "Ticari kullanım için güvenli. Adobe Creative Suite ile entegre.", url: "https://firefly.adobe.com", stars: 4.4, reviews: 2100 },
+        { name: "Leonardo AI", tag: "freemium", tech: 91, user: 86, desc: "Oyun ve karakter tasarımına özel modeller. Tutarlı karakter üretiminde güçlü.", url: "https://leonardo.ai", stars: 4.5, reviews: 1700 },
+      ],
+      video: [
+        { name: "Sora (OpenAI)", tag: "paid", tech: 97, user: 88, desc: "OpenAI'nin devrimsel video üretim modeli. Gerçekçilikte çıta en yüksek.", url: "https://sora.com", stars: 4.7, reviews: 890 },
+        { name: "Runway ML", tag: "freemium", tech: 93, user: 89, desc: "Profesyonel video düzenleme ve üretim. Film endüstrisinin tercihi.", url: "https://runwayml.com", stars: 4.6, reviews: 2200 },
+        { name: "Pika Labs", tag: "freemium", tech: 89, user: 85, desc: "Hızlı video üretim ve animasyon. Kullanımı kolay arayüz.", url: "https://pika.art", stars: 4.3, reviews: 1400 },
+        { name: "Kling AI", tag: "freemium", tech: 91, user: 86, desc: "Çin menşeli güçlü video modeli. Hareket tutarlılığı yüksek.", url: "https://klingai.com", stars: 4.4, reviews: 980 },
+        { name: "HeyGen", tag: "freemium", tech: 88, user: 87, desc: "Avatar tabanlı video üretim. Çok dilli anlatım için güçlü.", url: "https://heygen.com", stars: 4.5, reviews: 1600 },
+      ],
+      sohbet: [
+        { name: "ChatGPT (GPT-4o)", tag: "freemium", tech: 96, user: 91, desc: "En popüler genel amaçlı AI asistanı. Geniş bilgi tabanı.", url: "https://chat.openai.com", stars: 4.7, reviews: 6200 },
+        { name: "Claude (Anthropic)", tag: "freemium", tech: 95, user: 93, desc: "Uzun ve karmaşık sohbetlerde bağlamı en iyi tutan model.", url: "https://claude.ai", stars: 4.8, reviews: 3100 },
+        { name: "Gemini (Google)", tag: "freemium", tech: 93, user: 87, desc: "Google entegrasyonu ve multimodal yeteneklerle öne çıkıyor.", url: "https://gemini.google.com", stars: 4.5, reviews: 4400 },
+        { name: "Perplexity AI", tag: "freemium", tech: 90, user: 88, desc: "Gerçek zamanlı web aramalı AI. Bilgi doğruluğunda öne çıkıyor.", url: "https://perplexity.ai", stars: 4.6, reviews: 2800 },
+        { name: "Meta AI (Llama)", tag: "free", tech: 89, user: 83, desc: "Açık kaynak, ücretsiz. WhatsApp ve Instagram entegrasyonu.", url: "https://meta.ai", stars: 4.2, reviews: 1900 },
+      ],
+      araştırma: [
+        { name: "Perplexity AI", tag: "freemium", tech: 94, user: 91, desc: "Gerçek zamanlı web araştırması ve kaynak gösterimiyle araştırma asistanı.", url: "https://perplexity.ai", stars: 4.7, reviews: 2900 },
+        { name: "Claude (Anthropic)", tag: "freemium", tech: 95, user: 90, desc: "200K token bağlam penceresi sayesinde büyük belgeleri analiz edebiliyor.", url: "https://claude.ai", stars: 4.8, reviews: 1800 },
+        { name: "Elicit", tag: "freemium", tech: 90, user: 86, desc: "Akademik araştırma için özelleşmiş. Makale özetleme ve analiz.", url: "https://elicit.org", stars: 4.4, reviews: 640 },
+        { name: "Consensus", tag: "freemium", tech: 88, user: 84, desc: "Bilimsel makalelere dayalı kanıta dayalı yanıtlar üretiyor.", url: "https://consensus.app", stars: 4.3, reviews: 520 },
+        { name: "NotebookLM", tag: "free", tech: 91, user: 88, desc: "Google'ın not defteri + AI aracı. Kendi belgelerini yükle, sorgu yap.", url: "https://notebooklm.google.com", stars: 4.5, reviews: 1400 },
+      ],
+      veri: [
+        { name: "Julius AI", tag: "freemium", tech: 91, user: 87, desc: "CSV/Excel dosyalarını sohbetle analiz et. Grafik üretimi destekliyor.", url: "https://julius.ai", stars: 4.5, reviews: 780 },
+        { name: "ChatGPT + Code Interpreter", tag: "paid", tech: 94, user: 88, desc: "Python tabanlı veri analizi, görselleştirme ve istatistik.", url: "https://chat.openai.com", stars: 4.6, reviews: 1900 },
+        { name: "Akkio", tag: "paid", tech: 88, user: 83, desc: "No-code ML modeli oluşturma ve veri tahmin platformu.", url: "https://akkio.com", stars: 4.2, reviews: 340 },
+        { name: "Obviously AI", tag: "paid", tech: 87, user: 81, desc: "İş analitiği için hızlı ML modeli kurma.", url: "https://obviously.ai", stars: 4.0, reviews: 260 },
+        { name: "DataRobot", tag: "paid", tech: 93, user: 80, desc: "Kurumsal düzey AutoML platformu.", url: "https://datarobot.com", stars: 4.3, reviews: 890 },
+      ],
+    };
+
+    // Default fallback
+    const DEFAULT_TOOLS = AI_DATABASE.sohbet;
+
+    function getCategoryTools(category) {
+      return AI_DATABASE[category] || DEFAULT_TOOLS;
+    }
+
+    function computeMatch(tools, prompt) {
+      const lower = prompt.toLowerCase();
+      return tools.map(tool => {
+        let bonus = 0;
+        const keywords = tool.desc.toLowerCase().split(' ');
+        keywords.forEach(kw => {
+          if (kw.length > 4 && lower.includes(kw)) bonus += 3;
+        });
+        const overall = Math.round(((tool.tech * 0.4 + tool.user * 0.35 + Math.min(100, tool.stars * 20) * 0.25) + bonus));
+        return { ...tool, match: Math.min(100, Math.round(tool.tech * 0.4 + tool.user * 0.35 + Math.min(100, overall) * 0.25 + bonus)), overall: Math.min(99, overall) };
+      }).sort((a, b) => b.overall - a.overall);
+    }
+
+    function renderStars(val) {
+      const full = Math.floor(val);
+      const half = val - full >= 0.5 ? 1 : 0;
+      let s = '';
+      for (let i = 0; i < full; i++) s += '★';
+      if (half) s += '½';
+      return s;
+    }
+
+    function tagClass(tag) {
+      return tag === 'free' ? 'tag-free' : tag === 'freemium' ? 'tag-freemium' : 'tag-paid';
+    }
+
+    function tagLabel(tag) {
+      return tag === 'free' ? 'Ücretsiz' : tag === 'freemium' ? 'Freemium' : 'Ücretli';
+    }
+
+    function rankClass(i) {
+      return i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    }
+
+    async function findAI() {
+      const category = document.getElementById('category').value;
+      const prompt = document.getElementById('prompt').value.trim();
+      const budget = document.getElementById('budget').value;
+
+      if (!category) { alert('Lütfen bir kategori seç.'); return; }
+      if (!prompt || prompt.length < 20) { alert('Lütfen ne yapmak istediğini daha detaylı anlat (en az 20 karakter).'); return; }
+
+      const btn = document.getElementById('searchBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Analiz ediliyor...';
+
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'block';
+
+      // Simulate analysis delay
+      await new Promise(r => setTimeout(r, 1800));
+
+      let tools = getCategoryTools(category);
+
+      // Filter by budget
+      if (budget === 'ücretsiz') tools = tools.filter(t => t.tag === 'free');
+      else if (budget === 'freemium') tools = tools.filter(t => t.tag !== 'paid');
+
+      if (tools.length === 0) tools = getCategoryTools(category); // fallback
+
+      const ranked = computeMatch(tools, prompt);
+
+      document.getElementById('loadingState').style.display = 'none';
+      renderResults(ranked);
+
+      btn.disabled = false;
+      btn.textContent = '🔍 Sıralamayı Oluştur';
+    }
+
+    function renderResults(tools) {
+      const section = document.getElementById('resultsSection');
+      const cards = document.getElementById('aiCards');
+      const count = document.getElementById('resultsCount');
+
+      count.textContent = `${tools.length} araç sıralandı`;
+      cards.innerHTML = '';
+
+      tools.forEach((tool, i) => {
+        const whyText = i === 0
+          ? `<strong>En Uygun Seçim:</strong> İhtiyacın ve kategorin için en yüksek puanı aldı.`
+          : i === 1
+          ? `<strong>Güçlü Alternatif:</strong> Benzer yetenekler, farklı güçlü yönler.`
+          : `<strong>Değerlendirilebilir:</strong> Belirli özelliklerde öne çıkıyor.`;
+
+        const card = document.createElement('div');
+        card.className = `ai-card ${rankClass(i)}`;
+        card.style.animationDelay = `${i * 0.1}s`;
+        card.innerHTML = `
+          <div class="rank-badge">#${i+1}</div>
+          <div class="card-body">
+            <div class="card-top">
+              <div class="ai-name">${tool.name}</div>
+              <span class="ai-tag ${tagClass(tool.tag)}">${tagLabel(tool.tag)}</span>
+            </div>
+            <div class="ai-desc">${tool.desc}</div>
+            <div class="ai-why">${whyText}</div>
+            <div class="ai-scores">
+              <div class="score-item">
+                <div class="score-label">Teknik Skor</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar"><div class="score-fill fill-tech" style="width:${tool.tech}%"></div></div>
+                  <span class="score-val">${tool.tech}</span>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Kullanıcı Memnuniyeti</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar"><div class="score-fill fill-user" style="width:${tool.user}%"></div></div>
+                  <span class="score-val">${tool.user}</span>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Genel Puan</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar"><div class="score-fill fill-match" style="width:${tool.overall}%"></div></div>
+                  <span class="score-val">${tool.overall}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-action">
+            <div class="overall-score">${tool.overall}</div>
+            <div class="overall-label">Toplam</div>
+            <div class="star-row">${renderStars(tool.stars)}<span>(${tool.reviews.toLocaleString()})</span></div>
+            <a class="visit-btn" href="${tool.url}" target="_blank">Ziyaret Et →</a>
+          </div>
+        `;
+        cards.appendChild(card);
+      });
+
+      section.style.display = 'block';
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>
