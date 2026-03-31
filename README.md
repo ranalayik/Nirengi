@@ -70,13 +70,13 @@ python3 -m http.server 8080
 
 ## 🎬 Demo Video
 
-> 📹 [YouTube / Loom demo linki buraya eklenecek]
+> 📹 [https://www.loom.com/share/7fa453a9d5374562ac37bce243e29ec4]
 
 ---
 
 ## 🌐 Yayın Linki
 
-> 🔗 [Netlify / Vercel / Lovable yayın linki buraya eklenecek]
+> 🔗 [https://www.loom.com/share/7fa453a9d5374562ac37bce243e29ec4]
 
 ---
 
